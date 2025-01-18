@@ -20,7 +20,7 @@ ENV SV_LAN=0
 # install dependencies
 RUN dpkg --add-architecture i386 && \
     apt-get update && \
-    apt-get -qqy install lib32gcc1 curl nginx nano && \
+    apt-get -qqy install lib32gcc1 curl nginx nano lib32stdc++6 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -29,10 +29,10 @@ RUN dpkg --add-architecture i386 && \
 #     additional info: https://danielgibbs.co.uk/2017/10/hlds-steamcmd-workaround-appid-90-part-ii/
 RUN mkdir /root/Steam /root/.steam && \
     curl -sqL "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz" | tar zxf - -C /root/Steam && \
-    /root/Steam/steamcmd.sh +login anonymous +force_install_dir "/hlds" +app_update 90 +app_set_config 90 mod cstrike validate +quit || true && \
+    /root/Steam/steamcmd.sh +force_install_dir "/hlds" +login anonymous +app_update 90 +app_set_config 90 mod cstrike validate +quit || true && \
     rm -r /hlds/steamapps/* && \
     curl -s https://raw.githubusercontent.com/dgibbs64/HLDS-appmanifest/master/CounterStrike/appmanifest_90.acf -o /hlds/steamapps/appmanifest_90.acf && \
-    /root/Steam/steamcmd.sh +login anonymous +force_install_dir "/hlds" +app_update 90 +app_set_config 90 mod cstrike validate +quit && \
+    /root/Steam/steamcmd.sh +force_install_dir "/hlds" +login anonymous +app_update 90 +app_set_config 90 mod cstrike validate +quit && \
     rm -r /root/.steam /root/Steam
 
 # install metamod
