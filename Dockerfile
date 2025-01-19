@@ -7,20 +7,10 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.vcs-ref=$VCS_REF \
       org.label-schema.vcs-url="https://github.com/archont94/counter-strike1.6"
 
-# define default env variables
-ARG SERVER_NAME="Counter-Strike 1.6 DockerServer"
-ARG FAST_DL="http://127.0.0.1/cstrike/"
-ARG ADMIN_STEAM_ID="STEAM_0:0:123456"
-
-ENV PORT=27015
-ENV MAP=de_dust2
-ENV MAXPLAYERS=16
-ENV SV_LAN=0
-
 # install dependencies
 RUN dpkg --add-architecture i386 && \
     apt-get update && \
-    apt-get -qqy install lib32gcc1 curl nginx nano lib32stdc++6 && \
+    apt-get -qqy install lib32gcc1 curl nano lib32stdc++6 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -46,22 +36,23 @@ RUN curl -sqL "https://www.amxmodx.org/amxxdrop/1.10/amxmodx-1.10.0-git5467-base
     echo "linux addons/amxmodx/dlls/amxmodx_mm_i386.so" >> /hlds/cstrike/addons/metamod/plugins.ini && \
     echo "\"$ADMIN_STEAM_ID\" \"\" \"abcdefghijklmnopqrstu\" \"ce\" ; Server admin added during container build" >> /hlds/cstrike/addons/amxmodx/configs/users.ini
 
-# configure nginx to allow for FastDownload
-RUN mv /etc/nginx/sites-available/default /etc/nginx/sites-available/default.backup && \
-    bash -c "mkdir -p /srv/cstrike/{gfx,maps,models,overviews,sound,sprites}/nothing-here"
-COPY nginx_config.conf /etc/nginx/sites-available/default
-
-# configure FastDownload
-RUN echo "// enable fast download - sv_downloadurl have to start with 'http', end with 'cstrike/', i.e. 'http://10.20.30.40/cstrike/'  " >> /hlds/cstrike/server.cfg && \
-    echo "sv_downloadurl \"$FAST_DL\"" >> /hlds/cstrike/server.cfg && \
-    echo "sv_allowdownload 1" >> /hlds/cstrike/server.cfg && \
-    echo "sv_allowupload 1" >> /hlds/cstrike/server.cfg
-
 # change server name
 RUN sed -i "s/hostname \"Counter-Strike 1.6 Server\"/hostname \"$SERVER_NAME\"/" /hlds/cstrike/server.cfg
 
-COPY ./regamedll/cstrike /hlds/cstrike
+# copy regamedll, reapi, some cfgs
+COPY ./cstrike /hlds/cstrike
 
 # start server
 WORKDIR /hlds
-ENTRYPOINT service nginx start; ./hlds_run -game cstrike -strictportbind -ip 0.0.0.0 -port $PORT +sv_lan $SV_LAN +map $MAP -maxplayers $MAXPLAYERS
+
+# define default env variables
+ARG SERVER_NAME="Rigby CS"
+ARG FAST_DL="http://127.0.0.1/cstrike/"
+ARG ADMIN_STEAM_ID="STEAM_0:0:51369595"
+
+ENV PORT=27015
+ENV MAP=de_dust2
+ENV MAXPLAYERS=16
+ENV SV_LAN=0
+
+ENTRYPOINT ./hlds_run -game cstrike -strictportbind -ip 0.0.0.0 -port $PORT +sv_lan $SV_LAN +map $MAP -maxplayers $MAXPLAYERS
