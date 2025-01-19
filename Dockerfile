@@ -24,7 +24,6 @@ RUN dpkg --add-architecture i386 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-
 # create directories, download steamcmd and install CS 1.6 via steamcmd
 #     additional info: https://danielgibbs.co.uk/2017/10/hlds-steamcmd-workaround-appid-90-part-ii/
 RUN mkdir /root/Steam /root/.steam && \
@@ -42,8 +41,8 @@ RUN mkdir -p /hlds/cstrike/addons/metamod/dlls && \
     sed -i 's/gamedll_linux "dlls\/cs.so"/#gamedll_linux "dlls\/cs.so"\ngamedll_linux "addons\/metamod\/dlls\/metamod.so"/'  /hlds/cstrike/liblist.gam
 
 # install amxmodx
-RUN curl -sqL "https://www.amxmodx.org/release/amxmodx-1.8.2-base-linux.tar.gz" | tar zxf - -C /hlds/cstrike && \
-    curl -sqL "https://www.amxmodx.org/release/amxmodx-1.8.2-cstrike-linux.tar.gz" | tar zxf - -C /hlds/cstrike && \
+RUN curl -sqL "https://www.amxmodx.org/amxxdrop/1.10/amxmodx-1.10.0-git5467-base-linux.tar.gz" | tar zxf - -C /hlds/cstrike && \
+    curl -sqL "https://www.amxmodx.org/amxxdrop/1.10/amxmodx-1.10.0-git5467-cstrike-linux.tar.gz" | tar zxf - -C /hlds/cstrike && \
     echo "linux addons/amxmodx/dlls/amxmodx_mm_i386.so" >> /hlds/cstrike/addons/metamod/plugins.ini && \
     echo "\"$ADMIN_STEAM_ID\" \"\" \"abcdefghijklmnopqrstu\" \"ce\" ; Server admin added during container build" >> /hlds/cstrike/addons/amxmodx/configs/users.ini
 
@@ -60,6 +59,8 @@ RUN echo "// enable fast download - sv_downloadurl have to start with 'http', en
 
 # change server name
 RUN sed -i "s/hostname \"Counter-Strike 1.6 Server\"/hostname \"$SERVER_NAME\"/" /hlds/cstrike/server.cfg
+
+COPY ./regamedll/cstrike /hlds/cstrike
 
 # start server
 WORKDIR /hlds
